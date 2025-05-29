@@ -1,74 +1,55 @@
-const { DataTypes } = require("sequelize");
-const sequelize = require('../config/db'); // Import the Sequelize instance
+import { Model, DataTypes } from 'sequelize';
 
-  const Request = sequelize.define('Request', {
-    id: {
+export default (sequelize) => {
+  class Request extends Model {
+    static associate(models) {
+      Request.belongsTo(models.User, { foreignKey: 'requesterId', as: 'requester' });
+      Request.belongsTo(models.Vehicle, { foreignKey: 'vehicleId', as: 'vehicle' });
+      Request.hasMany(models.Message);
+      Request.hasMany(models.ServiceStatusLog, { foreignKey: 'requestId' });
+    }
+  }
+
+  Request.init({
+    request_id: {
       type: DataTypes.UUID,
       defaultValue: DataTypes.UUIDV4,
-      primaryKey: true
-    },
-    firstName: {
-      type: DataTypes.STRING,
-      allowNull: false
-    },
-    lastName: {
-      type: DataTypes.STRING,
-      allowNull: false
-    },
-    phone: {
-      type: DataTypes.STRING,
-      allowNull: false
-    },
-    email: {
-      type: DataTypes.STRING,
-      validate: {
-        isEmail: true
-      }
-    },
-    address: {
-      type: DataTypes.STRING,
-      allowNull: false
-    },
-    latitude: {
-      type: DataTypes.DECIMAL(10, 8)
-    },
-    longitude: {
-      type: DataTypes.DECIMAL(11, 8)
+      primaryKey: true,
+      field: 'request_id',
     },
     problemType: {
       type: DataTypes.ENUM('blockage', 'leakage', 'overflow', 'maintenance', 'other'),
-      allowNull: false
+      allowNull: false,
+      field: 'problem_type',
+    },
+    status: {
+      type: DataTypes.ENUM('submitted', 'assigned', 'en_route', 'in_progress', 'cancelled', 'completed'),
+      defaultValue: 'submitted',
     },
     urgency: {
       type: DataTypes.ENUM('low', 'medium', 'high', 'emergency'),
-      defaultValue: 'medium'
+      defaultValue: 'medium',
     },
     description: {
       type: DataTypes.TEXT,
-      allowNull: false
-    },
-    status: {
-      type: DataTypes.ENUM('submitted', 'assigned', 'en_route', 'in_progress', 'completed'),
-      defaultValue: 'submitted'
+      allowNull: false,
     },
     images: {
       type: DataTypes.ARRAY(DataTypes.STRING),
-      defaultValue: []
-    }
+      defaultValue: [],
+    },
+    location: {
+      type: DataTypes.GEOGRAPHY('POINT'),
+      allowNull: false,
+    },
   }, {
+    sequelize,
+    modelName: 'Request',
+    tableName: 'requests',
     timestamps: true,
-    paranoid: true
+    paranoid: true,
+    underscored: true,
   });
 
-  Request.associate = (models) => {
-    Request.belongsTo(models.User, {
-      foreignKey: 'requesterId',
-      as: 'requester'
-    });
-    Request.belongsTo(models.Vehicle, {
-      foreignKey: 'vehicleId',
-      as: 'vehicle'
-    });
-  };
-
- module.exports Request;
+  return Request;
+};

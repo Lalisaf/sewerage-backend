@@ -1,6 +1,4 @@
-const { DataTypes } = require("sequelize");
-const sequelize = require("../config/db");
-
+export default (sequelize, DataTypes) => {
 const ServiceRequest = sequelize.define("ServiceRequest", {
   request_id: {
     type: DataTypes.INTEGER,
@@ -36,4 +34,5 @@ const ServiceRequest = sequelize.define("ServiceRequest", {
   updatedAt: "updated_at",
 });
 
-module.exports = ServiceRequest;
+return ServiceRequest;
+}

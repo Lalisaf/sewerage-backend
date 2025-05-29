@@ -1,22 +1,27 @@
-// backend/routes/requestRoutes.js
-const express = require('express');
-const {
+import express from 'express';
+import {
   createRequest,
   getRequests,
   getRequest,
   updateRequest,
   deleteRequest,
   getNearbyRequests,
-  updateRequestStatus
-} = require('../controllers/requestController');
-const { protect, authorize } = require('../middlewares/authMiddleware');
+  updateRequestStatus,
+  getStats
+} from '../controllers/requestController.js'; // <-- ✅ fixed (added .js)
 
+import { authorize, protect } from '../middlewares/authMiddleware.js'; // Use protect and authorize from authMiddleware.js
+// Removed imports from middlewares/auth.js to avoid redundancy
 const router = express.Router();
+import {upload} from '../middlewares/uploadMiddleware.js';
+
+
+
 
 router
   .route('/')
-  .get(protect, authorize('admin', 'operator'), getRequests)
-  .post(createRequest);
+  .get(protect, authorize('admin'), getRequests)
+  .post(upload.array('images', 5), createRequest);
 
 router
   .route('/nearby')
@@ -30,6 +35,12 @@ router
 
 router
   .route('/:id/status')
-  .put(protect, authorize('driver'), updateRequestStatus);
+  .get(protect, getRequest) // Assuming you want to get the request before updating status
+  .put(protect, authorize('driver','admin'), updateRequestStatus);
 
-module.exports = router;
+router
+.route('/stats')
+.get(protect,getStats);
+
+
+export default router;

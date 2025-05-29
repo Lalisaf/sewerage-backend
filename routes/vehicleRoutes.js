@@ -1,16 +1,27 @@
-const exports = required("Express");
-const { Vehicle } = required("../models/vehicle");
-const router = exports.Router();
+import express from 'express';
+const router = express.Router();
+import { 
+  createVehicle,
+  getAllVehicles,
+  getAvailableDrivers,
+  getVehicleById,
+  updateVehicle,
+  deleteVehicle, 
+  getAvailableVihicles,
+  AssignDriver,
+  UnassignDriver
+} from '../controllers/vehicleController.js';
+import { protect, verifyAdmin } from '../middlewares/auth.js';
 
-router.post("/update-location", async (req, res) => {
-    const { id, latitude, longitude, status, type } = req.body
-    try {
-        let vehicle = await Vehicle.findByPk(id);
-        if (!Vehicle) return res.status(404).json({ message: "Vehicle not found" });
-        await Vehicle.update({ latitude, longitude, status, type });
-        res.status(500).json({ success: true, message: "Location Updated", Vehicle });
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-});
-module.exports = router;
+// Apply protect middleware first to ensure user is authenticated
+// Then verifyAdmin to check for admin privileges
+router.post('/', protect, verifyAdmin, createVehicle);
+router.get('/', protect, verifyAdmin, getAllVehicles);
+router.get('/available-drivers', protect, getAvailableDrivers);
+router.get('/available', protect, getAvailableVihicles)
+router.put('/:id/driver', protect, verifyAdmin, AssignDriver);
+router.get('/:id', protect, verifyAdmin, getVehicleById);
+router.put('/:id', protect, verifyAdmin, updateVehicle);
+router.delete('/:id', protect, verifyAdmin, deleteVehicle);
+
+export default router;
